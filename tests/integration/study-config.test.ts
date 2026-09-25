@@ -22,7 +22,9 @@ describe("Study 001 pilot configuration", () => {
     expect(config.inclusion_criteria.length).toBeGreaterThan(0);
     expect(config.pilot.candidate_skill_count).toEqual({min:2,max:3});
     expect(config.pilot.methodology_testing_only).toBe(true);
-    expect(config.pilot.freeze_methodology_before_dataset).toBe(true);\n    expect(policyFromStudyConfig(config).limits.maxSteps).toBe(config.limits.max_steps);\n    expect(policyFromStudyConfig(config).limits.processTimeoutMs).toBe(config.limits.process_timeout_ms);
+    expect(config.pilot.freeze_methodology_before_dataset).toBe(true);
+    expect(policyFromStudyConfig(config).limits.maxSteps).toBe(config.limits.max_steps);
+    expect(policyFromStudyConfig(config).limits.processTimeoutMs).toBe(config.limits.process_timeout_ms);
   });
 
   it("pins the current frozen fixture digest", async () => {
