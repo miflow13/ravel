@@ -1,3 +1,3 @@
-# Review notes
+# Project notes
 
-This synthetic app is intentionally small. Review source, tests, markup, and dependency configuration using the supplied skill.
+This is a small synthetic web application used as a controlled repository fixture.
