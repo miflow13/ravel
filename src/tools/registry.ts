@@ -87,7 +87,7 @@ export class ToolRegistry {
       { requestId: request.requestId, name: request.name, ok: false, error: reason },
       context.policy.limits.maxToolResultBytes
     );
-    await context.recorder.append({ runId: context.runId, type: "tool.result", payload: result });
+    await context.recorder.append({ runId: context.runId, type: "tool.result", payload: { ...result } });
     return result;
   }
 
@@ -159,7 +159,7 @@ export class ToolRegistry {
     }
 
     const capped = capToolResult(result, context.policy.limits.maxToolResultBytes);
-    await context.recorder.append({ runId: context.runId, type: "tool.result", payload: capped });
+    await context.recorder.append({ runId: context.runId, type: "tool.result", payload: { ...capped } });
     return capped;
   }
 }
