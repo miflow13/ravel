@@ -40,7 +40,7 @@ export function compareDeclaredToObserved(
   staticAnalysis: StaticAnalysis,
   observations: ObservationSet
 ): BehaviorComparison[] {
-  const declarations: Record<BehaviorComparison["behavior"], string[]> = {
+  const declarations: Record<BehaviorComparison["behavior"], string[]> = staticAnalysis.behaviorDeclarations ?? {
     file_read: staticAnalysis.references,
     file_write: [],
     process_execution: staticAnalysis.commands,
