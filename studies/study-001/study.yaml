@@ -50,5 +50,20 @@ pilot:
   candidate_skill_count:
     min: 2
     max: 3
+  candidates:
+    - id: channing-code-reviewer
+      path: studies/study-001/candidates/channing-code-reviewer
+      source_repository: https://github.com/channingwalton/skills
+      source_commit: 6ba894227795b1adef342ecfb0f444825484988f
+      source_path: skills/code-reviewer/SKILL.md
+      source_blob_sha: 996aec72914e5ac39aa5fbd69720c5aee65e0f47
+      license: MIT
+    - id: openai-review-agent
+      path: studies/study-001/candidates/openai-review-agent
+      source_repository: https://github.com/openai/codex
+      source_commit: 58670eeac4b0bdb9fcb86929d8631c14aee0d9f6
+      source_path: codex-rs/skills/src/assets/samples/review-agent/SKILL.md
+      source_blob_sha: c694020c1c5de0e8fee4e933f55e0f6b3d055d8a
+      license: Apache-2.0
   methodology_testing_only: true
   freeze_methodology_before_dataset: true
