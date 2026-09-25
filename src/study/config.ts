@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
+import type { PolicyConfig } from "../policy/types.js";
 
 const StudyConfigSchema = z.object({
   study_id: z.literal("study-001"),
@@ -40,8 +41,30 @@ const StudyConfigSchema = z.object({
     freeze_methodology_before_dataset: z.literal(true)
   })
 });
+
 export type StudyConfig = z.infer<typeof StudyConfigSchema>;
 export const DEFAULT_STUDY_CONFIG_PATH = path.resolve("studies/study-001/study.yaml");
+
 export async function loadStudyConfig(filePath = DEFAULT_STUDY_CONFIG_PATH): Promise<StudyConfig> {
   return StudyConfigSchema.parse(parse(await readFile(filePath, "utf8")));
+}
+
+export function policyFromStudyConfig(study: StudyConfig): PolicyConfig {
+  return {
+    workspaceRoot: study.policy.workspace_root,
+    protectedRoots: [...study.policy.protected_roots],
+    fakeHomeRoot: study.policy.fake_home_root,
+    network: study.policy.network,
+    limits: {
+      maxReadBytes: study.limits.max_read_bytes,
+      maxWriteBytes: study.limits.max_write_bytes,
+      maxToolResultBytes: study.limits.max_tool_result_bytes,
+      maxProcessOutputBytes: study.limits.max_process_output_bytes,
+      processTimeoutMs: study.limits.process_timeout_ms,
+      maxFilesystemModifications: study.limits.max_filesystem_modifications,
+      maxNetworkRequests: study.limits.max_network_requests,
+      maxSteps: study.limits.max_steps,
+      maxModelCalls: study.limits.max_model_calls
+    }
+  };
 }

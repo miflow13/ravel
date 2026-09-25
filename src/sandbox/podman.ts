@@ -110,9 +110,9 @@ export async function createSandbox(config: SandboxConfig = {}): Promise<PodmanS
   const image = config.image ?? DEFAULT_SANDBOX_IMAGE;
   const args = [
     "run","-d","--rm","--name",name,"--read-only",
-    "--tmpfs","/tmp:rw,noexec,nosuid,size=64m",
-    "--tmpfs","/workspace:rw,nosuid,size=256m",
-    "--tmpfs","/home/ravel:rw,noexec,nosuid,size=16m",
+    "--tmpfs","/tmp:rw,noexec,nosuid,size=64m,mode=1777",
+    "--tmpfs","/workspace:rw,nosuid,size=256m,mode=0755,uid=1000,gid=1000",
+    "--tmpfs","/home/ravel:rw,noexec,nosuid,size=16m,mode=0700,uid=1000,gid=1000",
     "--user","1000:1000","--cap-drop","ALL","--security-opt","no-new-privileges",
     ...(config.networkDisabled === false ? [] : ["--network","none"]),
     image,"sleep","infinity"

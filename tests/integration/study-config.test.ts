@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fixtureDigest } from "../../src/experiment/manifest.js";
 import { DEFAULT_SANDBOX_IMAGE } from "../../src/sandbox/podman.js";
 import { snapshotTree } from "../../src/sandbox/snapshot.js";
-import { loadStudyConfig } from "../../src/study/config.js";
+import { loadStudyConfig, policyFromStudyConfig } from "../../src/study/config.js";
 
 describe("Study 001 pilot configuration", () => {
   it("pins every experimental dimension required by the protocol", async () => {
@@ -22,7 +22,7 @@ describe("Study 001 pilot configuration", () => {
     expect(config.inclusion_criteria.length).toBeGreaterThan(0);
     expect(config.pilot.candidate_skill_count).toEqual({min:2,max:3});
     expect(config.pilot.methodology_testing_only).toBe(true);
-    expect(config.pilot.freeze_methodology_before_dataset).toBe(true);
+    expect(config.pilot.freeze_methodology_before_dataset).toBe(true);\n    expect(policyFromStudyConfig(config).limits.maxSteps).toBe(config.limits.max_steps);\n    expect(policyFromStudyConfig(config).limits.processTimeoutMs).toBe(config.limits.process_timeout_ms);
   });
 
   it("pins the current frozen fixture digest", async () => {

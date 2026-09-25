@@ -9,7 +9,7 @@ import type { ModelAdapter } from "../runner/model-adapter.js";
 import { DEFAULT_SANDBOX_IMAGE, isPodmanAvailable } from "../sandbox/podman.js";
 import { loadSkill } from "../skill/loader.js";
 import { resolveSkillReferences } from "../skill/references.js";
-import { loadStudyConfig } from "../study/config.js";
+import { loadStudyConfig, policyFromStudyConfig } from "../study/config.js";
 
 export interface RunCommandDependencies {
   createModel?: () => ModelAdapter;
@@ -42,16 +42,25 @@ export function registerRunCommand(program: Command, deps: RunCommandDependencie
       const absoluteSkill = path.resolve(skillPath);
       const study = await loadStudyConfig(deps.studyConfigPath);
       await preflightStudyRun(absoluteSkill, fixtureDir, deps.requireApiKey ?? true, deps.studyConfigPath);
+
       const model = (deps.createModel ?? (() => new OpenAIModelAdapter(STUDY_001_MODEL)))();
       const runner = new RavelRunner(model, study.runner.version);
       const runId = `ravel-${randomUUID().slice(0, 12)}`;
       const result = await runExperiment({
-        runId, skillDir: absoluteSkill, fixtureDir, fixtureId: study.fixture.id,
-        runsDir: path.resolve(deps.runsDir ?? "runs"), task: study.task,
-        runnerVersion: study.runner.version, modelProvider: "openai", modelId: study.model.id,
+        runId,
+        skillDir: absoluteSkill,
+        fixtureDir,
+        fixtureId: study.fixture.id,
+        runsDir: path.resolve(deps.runsDir ?? "runs"),
+        task: study.task,
+        runnerVersion: study.runner.version,
+        modelProvider: "openai",
+        modelId: study.model.id,
+        policy: policyFromStudyConfig(study),
         sandbox: { image: study.sandbox.image, networkDisabled: study.sandbox.network_disabled },
         canaryPaths: ["/workspace/CANARY.txt"]
       }, runner);
+
       process.stdout.write(`${result.paths.root}\n`);
       if (!result.status.completed) process.exitCode = 2;
     });
