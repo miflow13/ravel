@@ -126,7 +126,7 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
   const staticAnalysis = analyzeSkill(skill);
   await writeFile(paths.staticAnalysis, JSON.stringify({ ...staticAnalysis, resolvedReferences: references }, null, 2));
 
-  const before = await snapshotTree(config.fixtureDir);
+  const before = { ...(await snapshotTree(config.fixtureDir)), root: "/workspace" };
   await writeFile(paths.filesystemBefore, JSON.stringify(before, null, 2));
   const policy = config.policy ?? DEFAULT_STUDY_POLICY;
   const manifest = createManifest({
@@ -188,7 +188,7 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
     try {
       if (sandbox) {
         await sandbox.copyWorkspaceOut(exportDir);
-        after = await snapshotTree(exportDir);
+        after = { ...(await snapshotTree(exportDir)), root: "/workspace" };
         await writeFile(paths.filesystemAfter, JSON.stringify(after, null, 2));
       }
       await writeReports({ paths, manifest, status, staticAnalysis, before, after });
