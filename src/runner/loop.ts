@@ -22,7 +22,15 @@ export class RavelRunner implements Runner {
       modelCalls+=1;
       await context.toolContext.recorder.append({
         runId:context.runId,type:"model.response",
-        payload:{turn:modelCalls,modelId:output.modelId,responseId:output.responseId??null,inputTokens:output.usage?.inputTokens??null,outputTokens:output.usage?.outputTokens??null,toolCalls:output.toolCalls.map((call)=>({callId:call.callId,name:call.name}))}
+        payload:{
+          turn:modelCalls,
+          modelId:output.modelId,
+          responseId:output.responseId??null,
+          inputTokens:output.usage?.inputTokens??null,
+          outputTokens:output.usage?.outputTokens??null,
+          text:output.text??null,
+          toolCalls:output.toolCalls.map((call)=>({callId:call.callId,name:call.name}))
+        }
       });
       if(output.text) messages.push({role:"assistant",content:output.text});
       if(output.toolCalls.length===0){
