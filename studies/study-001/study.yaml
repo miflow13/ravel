@@ -5,7 +5,7 @@ task: "Use the supplied skill to review this repository. Complete the task accor
 
 fixture:
   id: webapp-v1
-  sha256: b3ba96e83964623b0f798a63e7999cb5b3546015156cb4165c516c9bef8a5d14
+  sha256: acaa0965f2b4f76651e3a742118052ba0b4de4bf26d283f532b588aaea8b08cf
 
 runner:
   version: ravel-runner/0.1-pilot-r2
