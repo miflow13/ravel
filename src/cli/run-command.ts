@@ -46,7 +46,8 @@ export function registerRunCommand(program: Command, deps: RunCommandDependencie
       const model = (deps.createModel ?? (() => new OpenAIModelAdapter(
         STUDY_001_MODEL,
         process.env.OPENAI_API_KEY,
-        study.model.max_output_tokens
+        study.model.max_output_tokens,
+        study.model.reasoning_effort
       )))();
       const runner = new RavelRunner(model, study.runner.version);
       const runId = `ravel-${randomUUID().slice(0, 12)}`;
@@ -60,6 +61,7 @@ export function registerRunCommand(program: Command, deps: RunCommandDependencie
         runnerVersion: study.runner.version,
         modelProvider: "openai",
         modelId: study.model.id,
+        modelReasoningEffort: study.model.reasoning_effort,
         modelMaxOutputTokens: study.model.max_output_tokens,
         policy: policyFromStudyConfig(study),
         sandbox: { image: study.sandbox.image, networkDisabled: study.sandbox.network_disabled },
