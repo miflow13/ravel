@@ -14,7 +14,8 @@ export class OpenAIModelAdapter implements ModelAdapter {
   constructor(
     readonly modelId = STUDY_001_MODEL,
     apiKey = process.env.OPENAI_API_KEY,
-    readonly maxOutputTokens = STUDY_001_MAX_OUTPUT_TOKENS
+    readonly maxOutputTokens = STUDY_001_MAX_OUTPUT_TOKENS,
+    readonly reasoningEffort: "medium" = "medium"
   ) {
     if (!apiKey) throw new Error("OPENAI_API_KEY is required for real model runs");
     this.client = new OpenAI({ apiKey });
@@ -35,6 +36,7 @@ export class OpenAIModelAdapter implements ModelAdapter {
     const response = await this.client.responses.create({
       model: this.modelId,
       max_output_tokens: this.maxOutputTokens,
+      reasoning: { effort: this.reasoningEffort },
       instructions: input.instructions,
       input: this.history as never,
       tools: input.tools.map((tool) => ({
