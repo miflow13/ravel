@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import type { ModelAdapter, ModelInput, ModelOutput } from "./model-adapter.js";
 
 export const STUDY_001_MODEL = "gpt-6-sol";
+export const STUDY_001_MAX_OUTPUT_TOKENS = 8_000;
 
 type ResponseItem = Record<string, unknown>;
 
@@ -10,7 +11,11 @@ export class OpenAIModelAdapter implements ModelAdapter {
   private history: ResponseItem[] = [];
   private sentToolOutputs = new Set<string>();
 
-  constructor(readonly modelId = STUDY_001_MODEL, apiKey = process.env.OPENAI_API_KEY) {
+  constructor(
+    readonly modelId = STUDY_001_MODEL,
+    apiKey = process.env.OPENAI_API_KEY,
+    readonly maxOutputTokens = STUDY_001_MAX_OUTPUT_TOKENS
+  ) {
     if (!apiKey) throw new Error("OPENAI_API_KEY is required for real model runs");
     this.client = new OpenAI({ apiKey });
   }
@@ -29,6 +34,7 @@ export class OpenAIModelAdapter implements ModelAdapter {
 
     const response = await this.client.responses.create({
       model: this.modelId,
+      max_output_tokens: this.maxOutputTokens,
       instructions: input.instructions,
       input: this.history as never,
       tools: input.tools.map((tool) => ({
