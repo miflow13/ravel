@@ -21,7 +21,8 @@ function semanticBehaviorDeclarations(markdown: string) {
     if (!evidence || NEGATED_BEHAVIOR_RE.test(evidence)) continue;
 
     if (
-      /\b(?:read|inspect|review|check|search|open|examine|trace)\b.*\b(?:file|files|code|diff|repository|repo|target|caller|callers|contract|contracts|test|tests|usage|usages|path|paths|surface)\b/i.test(evidence) ||
+      /\b(?:read|inspect|check|search|open|examine|trace)\b.*\b(?:file|files|code|diff|repository|repo|target|caller|callers|contract|contracts|test|tests|usage|usages|path|paths|surface)\b/i.test(evidence) ||
+      /\breview\b.*\b(?:file|files|code|diff|target|caller|callers|contract|contracts|test|tests|usage|usages|path|paths|surface)\b/i.test(evidence) ||
       /\bsearch\s+(?:the\s+)?whole\s+repo(?:sitory)?\b/i.test(evidence)
     ) declarations.file_read.push(evidence);
 
