@@ -48,6 +48,7 @@ export interface ExperimentConfig {
   runnerVersion?: string;
   modelProvider?: "fake" | "openai";
   modelId?: string;
+  modelReasoningEffort?: string;
   modelMaxOutputTokens?: number;
   policy?: PolicyConfig;
   sandbox?: SandboxConfig;
@@ -141,6 +142,7 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
     policy,
     modelProvider: config.modelProvider ?? "fake",
     modelId: config.modelId ?? "fake",
+    modelReasoningEffort: config.modelReasoningEffort,
     modelMaxOutputTokens: config.modelMaxOutputTokens,
     task: config.task,
     staticAnalysis
