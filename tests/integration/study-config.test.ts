@@ -14,6 +14,7 @@ describe("Study 001 pilot configuration", () => {
     expect(config.fixture.id).toBe("webapp-v1");
     expect(config.runner.version).toBe("ravel-runner/0.1");
     expect(config.model.id).toBe("gpt-6-sol");
+    expect(config.model.reasoning_effort).toBe("medium");
     expect(config.model.max_output_tokens).toBe(8000);
     expect(config.sandbox.image).toBe(DEFAULT_SANDBOX_IMAGE);
     expect(config.sandbox.network_disabled).toBe(true);
