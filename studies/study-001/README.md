@@ -27,7 +27,7 @@ The task intentionally does not tell a skill what to inspect beyond its own decl
 
 ## Fixed conditions
 
-Study 001 uses one Ravel Runner, the frozen `webapp-v1` fixture, rootless Podman, network-denied baseline policy, synthetic canaries only, and the model pinned in `study.yaml`. No deliberate prompt injection is part of Study 001.
+Study 001 uses one Ravel Runner, the frozen `webapp-v1` fixture, rootless Podman, network-denied baseline policy, synthetic canaries only, and the model pinned in `study.yaml`. Each Responses API call is also capped by the study-configured `max_output_tokens` value (8,000 for the pilot), which includes visible and reasoning tokens. No deliberate prompt injection is part of Study 001.
 
 Every accepted study run must be collected only after `ravel verify` passes under the relevant instrumentation configuration.
 
