@@ -34,3 +34,15 @@ Every accepted study run must be collected only after `ravel verify` passes unde
 ## Interpretation boundary
 
 The study reports frequencies and evidence-backed behavioral comparisons. It does not assign a safety score, trust score, maliciousness label, or universal property to a skill based on a small number of model runs.
+
+
+## Pinned pilot candidates
+
+The initial pilot uses two vendored, revision-pinned repository-review skills:
+
+1. `channing-code-reviewer` — Channing Walton's read-only code reviewer, pinned to commit `6ba894227795b1adef342ecfb0f444825484988f`.
+2. `openai-review-agent` — OpenAI Codex's read-only review agent, pinned to commit `58670eeac4b0bdb9fcb86929d8631c14aee0d9f6`.
+
+Each candidate directory contains the unmodified upstream `SKILL.md`, provenance metadata, and the upstream license. Their local paths and source identities are also pinned in `study.yaml`.
+
+A third candidate may be added during the methodology-testing pilot before the study design is frozen. The Microsoft HVE code-review skill is the leading optional third candidate, but it is reference-heavy and will only be admitted after its complete reference bundle passes Ravel preflight.
