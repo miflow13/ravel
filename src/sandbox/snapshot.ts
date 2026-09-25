@@ -33,6 +33,7 @@ export async function snapshotTree(root: string): Promise<FilesystemSnapshot> {
     const children = await readdir(current, { withFileTypes: true });
     children.sort((a, b) => compareNames(a.name, b.name));
     for (const child of children) {
+      if (child.name === ".git") continue;
       const absolute = path.join(current, child.name);
       const relative = path.relative(absoluteRoot, absolute).split(path.sep).join("/");
       const info = await lstat(absolute);
