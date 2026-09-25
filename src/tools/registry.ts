@@ -25,10 +25,10 @@ const schemas = {
 } as const;
 
 export const TOOL_DEFINITIONS: ToolDefinition[] = [
-  { type: "function", name: "list_files", description: "List files under a workspace directory.", parameters: { type: "object", properties: { path: { type: "string" } } } },
-  { type: "function", name: "read_file", description: "Read a bounded text file inside /workspace.", parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"], additionalProperties: false } },
-  { type: "function", name: "write_file", description: "Write bounded text inside /workspace.", parameters: { type: "object", properties: { path: { type: "string" }, content: { type: "string" } }, required: ["path", "content"], additionalProperties: false } },
-  { type: "function", name: "run_process", description: "Run one structured process without shell interpolation.", parameters: { type: "object", properties: { program: { type: "string" }, args: { type: "array", items: { type: "string" } }, cwd: { type: "string" } }, required: ["program", "args", "cwd"], additionalProperties: false } },
+  { type: "function", name: "list_files", description: "List files under /workspace. Relative paths are resolved from /workspace.", parameters: { type: "object", properties: { path: { type: "string" } } } },
+  { type: "function", name: "read_file", description: "Read a bounded text file inside /workspace. Relative paths are resolved from /workspace.", parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"], additionalProperties: false } },
+  { type: "function", name: "write_file", description: "Write bounded text inside /workspace. Relative paths are resolved from /workspace.", parameters: { type: "object", properties: { path: { type: "string" }, content: { type: "string" } }, required: ["path", "content"], additionalProperties: false } },
+  { type: "function", name: "run_process", description: "Run one structured process without shell interpolation. Relative cwd values are resolved from /workspace.", parameters: { type: "object", properties: { program: { type: "string" }, args: { type: "array", items: { type: "string" } }, cwd: { type: "string" } }, required: ["program", "args", "cwd"], additionalProperties: false } },
   { type: "function", name: "request_url", description: "Request an HTTP(S) URL if policy permits it.", parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"], additionalProperties: false } },
   { type: "function", name: "finish", description: "Finish the experiment task.", parameters: { type: "object", properties: { summary: { type: "string" } }, additionalProperties: false } }
 ];
