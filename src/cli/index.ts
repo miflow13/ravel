@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { registerInspectCommand } from "./inspect-command.js";
 import { registerRunCommand } from "./run-command.js";
+import { registerVerifyCommand } from "./verify-command.js";
 
 export function createProgram(): Command {
   const program = new Command()
@@ -10,6 +11,7 @@ export function createProgram(): Command {
     .version("0.1.0");
   registerInspectCommand(program);
   registerRunCommand(program);
+  registerVerifyCommand(program);
   return program;
 }
 
