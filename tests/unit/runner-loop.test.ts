@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -37,9 +37,11 @@ async function context(maxModelCalls = 10, maxSteps = 10) {
   const policy = structuredClone(DEFAULT_STUDY_POLICY);
   policy.limits.maxModelCalls = maxModelCalls;
   policy.limits.maxSteps = maxSteps;
+  const tracePath = path.join(root, "trace.jsonl");
   return {
     runId: "r1", instructions: "Review.", task: "Review this repository.", toolRegistry: new ToolRegistry(),
-    toolContext: { runId: "r1", sandbox: new FakeSandbox() as unknown as PodmanSandbox, recorder: new TraceRecorder(path.join(root, "trace.jsonl")), policy, canaryPaths: [] }
+    toolContext: { runId: "r1", sandbox: new FakeSandbox() as unknown as PodmanSandbox, recorder: new TraceRecorder(tracePath), policy, canaryPaths: [] },
+    tracePath
   };
 }
 
@@ -50,10 +52,22 @@ describe("RavelRunner", () => {
       { modelId: "fake", toolCalls: [{ callId: "c2", name: "run_process", args: { program: "npm", args: ["test"], cwd: "/workspace" } }] },
       { modelId: "fake", toolCalls: [{ callId: "c3", name: "finish", args: { summary: "done" } }] }
     ]);
-    const result = await new RavelRunner(model).run(await context());
+    const ctx = await context();
+    const result = await new RavelRunner(model).run(ctx);
     expect(result.reason).toBe("completed");
     expect(model.calls).toHaveLength(3);
     expect(model.calls[1]?.messages.some((m) => m.role === "tool" && m.callId === "c1")).toBe(true);
+  });
+
+  it("preserves model text in trace evidence", async () => {
+    const model = new ScriptedModel([
+      { modelId: "fake", text: "Substantive review text.", toolCalls: [{ callId: "done", name: "finish", args: { summary: "done" } }] }
+    ]);
+    const ctx = await context();
+    const result = await new RavelRunner(model).run(ctx);
+    expect(result.reason).toBe("completed");
+    const trace = await readFile(ctx.tracePath, "utf8");
+    expect(trace).toContain('"text":"Substantive review text."');
   });
 
   it("terminates at model and step limits", async () => {
