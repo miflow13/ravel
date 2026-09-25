@@ -1,13 +1,19 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { PolicyConfig } from "../policy/types.js";
+import { compareDeclaredToObserved } from "../report/comparison.js";
+import { renderHtmlReport } from "../report/html-report.js";
+import { buildJsonReport } from "../report/json-report.js";
+import { deriveObservations } from "../report/observations.js";
 import { createSandbox, type PodmanSandbox, type SandboxConfig } from "../sandbox/podman.js";
 import { snapshotTree, type FilesystemSnapshot } from "../sandbox/snapshot.js";
 import { analyzeSkill } from "../skill/analyzer.js";
 import { loadSkill } from "../skill/loader.js";
 import { resolveSkillReferences } from "../skill/references.js";
+import type { StaticAnalysis } from "../skill/types.js";
 import { ToolRegistry } from "../tools/registry.js";
+import { TraceEventSchema, type TraceEvent } from "../trace/event-schema.js";
 import { TraceRecorder } from "../trace/recorder.js";
 import type { Runner } from "../runner/types.js";
 import { createManifest, serializeManifest, type ExperimentManifest } from "./manifest.js";
@@ -61,13 +67,39 @@ function terminationFor(error: unknown): TerminationReason {
   return "runner_error";
 }
 
+async function readTrace(filePath: string): Promise<TraceEvent[]> {
+  const raw = await readFile(filePath, "utf8");
+  return raw.split("\n").filter(Boolean).map((line) => TraceEventSchema.parse(JSON.parse(line)));
+}
+
+async function writeReports(input: {
+  paths: ExperimentPaths;
+  manifest: ExperimentManifest;
+  status: RunStatus;
+  staticAnalysis: StaticAnalysis;
+  before: FilesystemSnapshot;
+  after?: FilesystemSnapshot;
+}): Promise<void> {
+  const events = await readTrace(input.paths.trace);
+  const observations = deriveObservations(events, { before: input.before, after: input.after });
+  const comparison = compareDeclaredToObserved(input.staticAnalysis, observations);
+  const report = buildJsonReport({
+    manifest: input.manifest,
+    status: input.status,
+    staticAnalysis: input.staticAnalysis,
+    observations,
+    comparison,
+    events
+  });
+  await writeFile(input.paths.reportJson, JSON.stringify(report, null, 2));
+  await writeFile(input.paths.reportHtml, renderHtmlReport(report));
+}
+
 export async function runExperiment(config: ExperimentConfig, runner: Runner): Promise<ExperimentResult> {
   const paths = await createRunDirectory(config.runsDir, config.runId);
   const skill = await loadSkill(config.skillDir);
   const references = await resolveSkillReferences(skill);
-  if (references.some((ref) => !ref.exists || ref.escapedRoot)) {
-    throw new Error("Skill validation failed: unresolved or escaping reference");
-  }
+  if (references.some((ref) => !ref.exists || ref.escapedRoot)) throw new Error("Skill validation failed: unresolved or escaping reference");
   const staticAnalysis = analyzeSkill(skill);
   await writeFile(paths.staticAnalysis, JSON.stringify({ ...staticAnalysis, resolvedReferences: references }, null, 2));
 
@@ -108,21 +140,9 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
       instructions: skill.markdown,
       task: config.task,
       toolRegistry: registry,
-      toolContext: {
-        runId: config.runId,
-        sandbox,
-        recorder,
-        policy,
-        canaryPaths: config.canaryPaths ?? []
-      }
+      toolContext: { runId: config.runId, sandbox, recorder, policy, canaryPaths: config.canaryPaths ?? [] }
     });
-
-    status = {
-      runId: config.runId,
-      reason: result.reason,
-      completed: result.reason === "completed",
-      message: result.summary
-    };
+    status = { runId: config.runId, reason: result.reason, completed: result.reason === "completed", message: result.summary };
     await recorder.append({
       runId: config.runId,
       type: result.reason === "completed" ? "run.end" : "run.terminated",
@@ -131,23 +151,19 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
   } catch (error) {
     const reason = terminationFor(error);
     status = { runId: config.runId, reason, completed: false, message: error instanceof Error ? error.message : String(error) };
-    await recorder.append({
-      runId: config.runId,
-      type: "run.terminated",
-      payload: { reason, error: status.message }
-    });
+    await recorder.append({ runId: config.runId, type: "run.terminated", payload: { reason, error: status.message } });
   } finally {
-    if (sandbox) {
-      try {
+    try {
+      if (sandbox) {
         await sandbox.copyWorkspaceOut(exportDir);
         after = await snapshotTree(exportDir);
         await writeFile(paths.filesystemAfter, JSON.stringify(after, null, 2));
-      } catch (snapshotError) {
-        if (!status.message) status.message = `Final snapshot failed: ${snapshotError instanceof Error ? snapshotError.message : String(snapshotError)}`;
       }
-      await sandbox.destroy();
+      await writeReports({ paths, manifest, status, staticAnalysis, before, after });
+    } finally {
+      if (sandbox) await sandbox.destroy();
+      await rm(exportDir, { recursive: true, force: true });
     }
-    await rm(exportDir, { recursive: true, force: true });
   }
 
   return { paths, status, manifest, before, after };
