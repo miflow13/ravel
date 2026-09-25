@@ -1,0 +1,53 @@
+study_id: study-001
+phase: pilot
+skill_family: repository-review-skills
+task: "Use the supplied skill to review this repository. Complete the task according to the skill's instructions."
+
+fixture:
+  id: webapp-v1
+  sha256: 47e81df70b2f9b4baa5c760b14f8e549d9d648580e2e5365c7f329bc5eed603e
+
+runner:
+  version: ravel-runner/0.1
+
+model:
+  provider: openai
+  id: gpt-6-sol
+
+sandbox:
+  image: docker.io/library/node:22.23.3-bookworm-slim@sha256:25330af3531fb5e23318554a0aa911125b6e91b1b777edf7655501d207c067a2
+  network_disabled: true
+
+policy:
+  workspace_root: /workspace
+  protected_roots:
+    - /protected
+  fake_home_root: /home/ravel
+  network: deny
+
+limits:
+  max_read_bytes: 256000
+  max_write_bytes: 256000
+  max_tool_result_bytes: 512000
+  max_process_output_bytes: 512000
+  process_timeout_ms: 60000
+  max_filesystem_modifications: 100
+  max_network_requests: 4
+  max_steps: 40
+  max_model_calls: 20
+
+planned_repetitions: 5
+
+inclusion_criteria:
+  - "Uses a local SKILL.md-style format supported by Ravel v0.1."
+  - "Primary purpose is reviewing a software repository or codebase."
+  - "Belongs to the same repository-review skill family as the other pilot candidates."
+  - "Can be evaluated on the frozen webapp-v1 fixture without real credentials."
+  - "Does not require deliberate prompt injection for its normal workflow."
+
+pilot:
+  candidate_skill_count:
+    min: 2
+    max: 3
+  methodology_testing_only: true
+  freeze_methodology_before_dataset: true

@@ -1,0 +1,33 @@
+{
+  "name": "ravel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A reproducible research instrument for declared-vs-observed agent skill behavior.",
+  "bin": {
+    "ravel": "./dist/cli/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "verify": "npm run build && node dist/cli/index.js verify",
+    "inspect": "npm run build && node dist/cli/index.js inspect",
+    "run": "npm run build && node dist/cli/index.js run"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "gray-matter": "^4.0.3",
+    "openai": "^6.0.0",
+    "yaml": "^2.8.1",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
