@@ -37,6 +37,15 @@ const StudyConfigSchema = z.object({
   inclusion_criteria: z.array(z.string().min(1)).min(1),
   pilot: z.object({
     candidate_skill_count: z.object({ min: z.number().int().positive(), max: z.number().int().positive() }),
+    candidates: z.array(z.object({
+      id: z.string().min(1),
+      path: z.string().min(1),
+      source_repository: z.string().url(),
+      source_commit: z.string().regex(/^[a-f0-9]{40}$/),
+      source_path: z.string().min(1),
+      source_blob_sha: z.string().regex(/^[a-f0-9]{40}$/),
+      license: z.string().min(1)
+    })).min(2).max(3),
     methodology_testing_only: z.literal(true),
     freeze_methodology_before_dataset: z.literal(true)
   })
