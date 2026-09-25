@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { access, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -11,9 +11,10 @@ afterEach(async () => {
 });
 
 describe("createRunDirectory", () => {
-  it("creates stable isolated artifact paths", async () => {
-    const base = await mkdtemp(path.join(os.tmpdir(), "ravel-runs-"));
-    created.push(base);
+  it("creates the base, isolated run root, artifacts directory, and stable artifact paths", async () => {
+    const temp = await mkdtemp(path.join(os.tmpdir(), "ravel-runs-parent-"));
+    created.push(temp);
+    const base = path.join(temp, "nested", "runs");
 
     const paths = await createRunDirectory(base, "run-001");
 
@@ -26,6 +27,8 @@ describe("createRunDirectory", () => {
     expect(paths.reportJson).toBe(path.join(paths.root, "report.json"));
     expect(paths.reportHtml).toBe(path.join(paths.root, "report.html"));
     expect(paths.artifacts).toBe(path.join(paths.root, "artifacts"));
+    await expect(access(paths.root)).resolves.toBeUndefined();
+    await expect(access(paths.artifacts)).resolves.toBeUndefined();
   });
 
   it("never aliases distinct run IDs", async () => {
@@ -34,5 +37,11 @@ describe("createRunDirectory", () => {
     const first = await createRunDirectory(base, "run-a");
     const second = await createRunDirectory(base, "run-b");
     expect(first.root).not.toBe(second.root);
+  });
+
+  it("rejects traversal-like run IDs", async () => {
+    const base = await mkdtemp(path.join(os.tmpdir(), "ravel-runs-"));
+    created.push(base);
+    await expect(createRunDirectory(base, "../escape")).rejects.toThrow("unsupported characters");
   });
 });

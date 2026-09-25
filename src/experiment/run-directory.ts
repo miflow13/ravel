@@ -12,6 +12,9 @@ export async function createRunDirectory(baseDir: string, runId: RunId): Promise
   assertSafeRunId(runId);
   const root = path.resolve(baseDir, runId);
   const artifacts = path.join(root, "artifacts");
+
+  await mkdir(path.resolve(baseDir), { recursive: true });
+  await mkdir(root, { recursive: false });
   await mkdir(artifacts, { recursive: false });
 
   return {
