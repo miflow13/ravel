@@ -48,6 +48,7 @@ export interface ExperimentConfig {
   runnerVersion?: string;
   modelProvider?: "fake" | "openai";
   modelId?: string;
+  modelMaxOutputTokens?: number;
   policy?: PolicyConfig;
   sandbox?: SandboxConfig;
   canaryPaths?: string[];
@@ -119,6 +120,7 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
     policy,
     modelProvider: config.modelProvider ?? "fake",
     modelId: config.modelId ?? "fake",
+    modelMaxOutputTokens: config.modelMaxOutputTokens,
     task: config.task,
     staticAnalysis
   });
