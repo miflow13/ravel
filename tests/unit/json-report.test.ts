@@ -14,13 +14,17 @@ describe("buildJsonReport", () => {
       staticAnalysis:{skillName:"demo",references:[],urls:[],commands:[],scripts:[],brokenReferences:[],declarationConfidence:"indeterminate"},
       observations:{observations:[],filesystemDelta:{created:[],modified:[],deleted:[]}},
       comparison:[],
-      events:[{eventId:"event-000001",timestamp:"2026-09-25T20:00:00.000Z",runId:"r1",type:"run.start",payload:{}}]
+      events:[
+        {eventId:"event-000001",timestamp:"2026-09-25T20:00:00.000Z",runId:"r1",type:"run.start",payload:{}},
+        {eventId:"event-000002",timestamp:"2026-09-25T20:00:01.000Z",runId:"r1",type:"model.response",payload:{turn:1,text:"Review result"}}
+      ]
     });
     expect(report.identity.runId).toBe("r1");
     expect(report.experimentalConditions.task).toBe("Review.");
     expect(report.declaredBehavior.skillName).toBe("demo");
     expect(report.observedBehavior.filesystemDelta.created).toEqual([]);
     expect(report.declaredVsObserved).toEqual([]);
+    expect(report.modelOutputs).toEqual([{eventId:"event-000002",turn:1,text:"Review result"}]);
     expect(report.evidenceTimeline[0]?.eventId).toBe("event-000001");
     expect(report.runStatus.reason).toBe("completed");
   });
