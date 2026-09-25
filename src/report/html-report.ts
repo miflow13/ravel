@@ -33,6 +33,9 @@ export function renderHtmlReport(report: JsonReport): string {
       <td><code>${item.observedEvidenceEventIds.map(escapeHtml).join(", ") || "—"}</code></td>
     </tr>`).join("");
 
+  const modelOutputs = report.modelOutputs.map((output) => `
+    <article><h3>Turn ${escapeHtml(output.turn ?? "—")} · <code>${escapeHtml(output.eventId)}</code></h3><pre>${escapeHtml(output.text)}</pre></article>`).join("") || "<p>—</p>";
+
   const timeline = report.evidenceTimeline.map((event) => `
     <tr><td><code>${escapeHtml(event.eventId)}</code></td><td>${escapeHtml(event.timestamp)}</td><td>${escapeHtml(event.type)}</td></tr>`).join("");
 
@@ -64,7 +67,10 @@ ${status}
 <section id="comparison"><h2>5. Declared vs Observed</h2>
 <table><thead><tr><th>Behavior</th><th>Label</th><th>Declared evidence</th><th>Observed event IDs</th></tr></thead><tbody>${comparison}</tbody></table>
 </section>
-<section id="timeline"><h2>6. Evidence Timeline</h2>
+<section id="model-outputs"><h2>6. Model Outputs</h2>
+${modelOutputs}
+</section>
+<section id="timeline"><h2>7. Evidence Timeline</h2>
 <table><thead><tr><th>Event ID</th><th>Timestamp</th><th>Type</th></tr></thead><tbody>${timeline}</tbody></table>
 </section>
 </main></body></html>`;
