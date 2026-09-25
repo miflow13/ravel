@@ -15,7 +15,7 @@ const report: JsonReport = {
 };
 
 describe("renderHtmlReport", () => {
-  it("is standalone, contains six approved sections, exact values and provenance", () => {
+  it("is standalone, contains all approved sections, exact values and provenance", () => {
     const html=renderHtmlReport(report);
     for(const title of ["Identity","Experimental Conditions","Declared Behavior","Observed Behavior","Declared vs Observed","Model Outputs","Evidence Timeline"]) expect(html).toContain(title);
     expect(html).toContain(">4<");
