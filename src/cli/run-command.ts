@@ -9,23 +9,33 @@ import type { ModelAdapter } from "../runner/model-adapter.js";
 import { isPodmanAvailable } from "../sandbox/podman.js";
 import { loadSkill } from "../skill/loader.js";
 import { resolveSkillReferences } from "../skill/references.js";
-
-const STUDY_TASK = "Use the supplied skill to review this repository. Complete the task according to the skill's instructions.";
+import { loadStudyConfig } from "../study/config.js";
 
 export interface RunCommandDependencies {
   createModel?: () => ModelAdapter;
   fixtureDir?: string;
   runsDir?: string;
   requireApiKey?: boolean;
+  studyConfigPath?: string;
 }
 
-export async function preflightStudyRun(skillPath: string, fixtureDir: string, requireApiKey = true): Promise<void> {
+export async function preflightStudyRun(
+  skillPath: string,
+  fixtureDir: string,
+  requireApiKey = true,
+  studyConfigPath?: string
+): Promise<void> {
+  const study=await loadStudyConfig(studyConfigPath);
   const skill=await loadSkill(skillPath);
   const refs=await resolveSkillReferences(skill);
   if(refs.some((ref)=>!ref.exists||ref.escapedRoot)) throw new Error("Skill preflight failed: unresolved or escaping reference");
   if(!(await isPodmanAvailable())) throw new Error("Rootless Podman is required");
   const fixture=await verifyFrozenFixture(fixtureDir);
   if(!fixture.valid) throw new Error(`Study fixture integrity failed: ${fixture.problems.join(", ")}`);
+  if(fixture.id!==study.fixture.id || fixture.sha256!==study.fixture.sha256) {
+    throw new Error("Study fixture hash does not match the frozen Study 001 configuration");
+  }
+  if(study.model.id!==STUDY_001_MODEL) throw new Error("Study model configuration does not match the pinned Ravel model");
   if(requireApiKey && !process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is required for real model runs");
 }
 
@@ -37,21 +47,22 @@ export function registerRunCommand(program: Command, deps: RunCommandDependencie
     .action(async (skillPath: string) => {
       const fixtureDir=path.resolve(deps.fixtureDir ?? "fixtures/webapp-v1");
       const absoluteSkill=path.resolve(skillPath);
-      await preflightStudyRun(absoluteSkill,fixtureDir,deps.requireApiKey ?? true);
+      const study=await loadStudyConfig(deps.studyConfigPath);
+      await preflightStudyRun(absoluteSkill,fixtureDir,deps.requireApiKey ?? true,deps.studyConfigPath);
 
       const model=(deps.createModel ?? (()=>new OpenAIModelAdapter(STUDY_001_MODEL)))();
-      const runner=new RavelRunner(model);
+      const runner=new RavelRunner(model,study.runner.version);
       const runId=`ravel-${randomUUID().slice(0,12)}`;
       const result=await runExperiment({
         runId,
         skillDir:absoluteSkill,
         fixtureDir,
-        fixtureId:"webapp-v1",
+        fixtureId:study.fixture.id,
         runsDir:path.resolve(deps.runsDir ?? "runs"),
-        task:STUDY_TASK,
-        runnerVersion:runner.version,
+        task:study.task,
+        runnerVersion:study.runner.version,
         modelProvider:"openai",
-        modelId:STUDY_001_MODEL,
+        modelId:study.model.id,
         canaryPaths:["/workspace/CANARY.txt"]
       },runner);
 
