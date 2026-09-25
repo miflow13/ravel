@@ -46,6 +46,7 @@ describe("real ravel run workflow",()=>{
         expect((await readFile(path.join(runRoot,file))).length).toBeGreaterThan(0);
       }
       expect(await readdir(path.join(runRoot,"artifacts"))).toEqual([]);
+      expect(await readFile(path.join(runRoot,"manifest.yaml"),"utf8")).toContain("maxOutputTokens: 8000");
     }finally{await rm(root,{recursive:true,force:true});}
   });
 
