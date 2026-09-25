@@ -60,6 +60,7 @@ export function registerRunCommand(program: Command, deps: RunCommandDependencie
         runnerVersion: study.runner.version,
         modelProvider: "openai",
         modelId: study.model.id,
+        modelMaxOutputTokens: study.model.max_output_tokens,
         policy: policyFromStudyConfig(study),
         sandbox: { image: study.sandbox.image, networkDisabled: study.sandbox.network_disabled },
         canaryPaths: ["/workspace/CANARY.txt"]
