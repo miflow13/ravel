@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildJsonReport } from "../../src/report/json-report.js";
 
 describe("buildJsonReport", () => {
-  it("contains the six evidence-backed report areas and explicit status", () => {
+  it("contains the evidence-backed report areas, model outputs, and explicit status", () => {
     const report = buildJsonReport({
       manifest: {
         schemaVersion:1,runId:"r1",createdAt:"2026-09-25T20:00:00.000Z",ravelVersion:"0.1.0",runnerVersion:"runner",
