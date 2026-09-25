@@ -23,6 +23,9 @@ describe("Podman sandbox", () => {
       expect(read.stdout).toBe("fixture");
       const leaked = await sandbox.execProcess("cat", [hostOnly]);
       expect(leaked.exitCode).not.toBe(0);
+      const git = await sandbox.execProcess("git", ["--version"]);
+      expect(git.exitCode).toBe(0);
+      expect(git.stdout).toMatch(/^git version /);
     } finally {
       const id = sandbox.containerId;
       await sandbox.destroy();
