@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { registerInspectCommand } from "./inspect-command.js";
+import { registerRunCommand } from "./run-command.js";
 
 export function createProgram(): Command {
   const program = new Command()
@@ -8,6 +9,7 @@ export function createProgram(): Command {
     .description("Declared-vs-observed agent skill research instrument")
     .version("0.1.0");
   registerInspectCommand(program);
+  registerRunCommand(program);
   return program;
 }
 
