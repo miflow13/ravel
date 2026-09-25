@@ -6,10 +6,11 @@ import { ToolRegistry } from "../../src/tools/registry.js";
 import type { PolicyConfig } from "../../src/policy/types.js";
 import { TraceRecorder } from "../../src/trace/recorder.js";
 import type { PodmanSandbox, ProcessResult } from "../../src/sandbox/podman.js";
+import { assertWorkspacePath } from "../../src/sandbox/paths.js";
 
 class FakeSandbox {
   files = new Map([["/workspace/a.txt", "hello"], ["/workspace/CANARY.txt", "synthetic-canary"]]);
-  async resolvePath(candidate: string) { return candidate; }
+  async resolvePath(candidate: string) { return assertWorkspacePath(candidate); }
   async execProcess(program: string, args: string[], cwd: string, timeoutMs: number): Promise<ProcessResult> {
     if (program === "stat") {
       const value = this.files.get(args.at(-1) ?? "");
@@ -44,6 +45,22 @@ describe("ToolRegistry", () => {
       expect(result.ok).toBe(true);
       const types = (await readFile(trace, "utf8")).trim().split("\n").map((line) => JSON.parse(line).type);
       expect(types).toEqual(["tool.request", "tool.allowed", "filesystem.read", "canary.access", "tool.result"]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("normalizes relative file paths into the workspace without a denial", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "ravel-tools-relative-"));
+    try {
+      const trace = path.join(root, "trace.jsonl");
+      const registry = new ToolRegistry();
+      const context = { runId: "r1", sandbox: new FakeSandbox() as unknown as PodmanSandbox, recorder: new TraceRecorder(trace), policy, canaryPaths: [] };
+      const result = await registry.execute({ requestId: "r1", name: "read_file", args: { path: "a.txt" } }, context);
+      expect(result.ok).toBe(true);
+      const events = (await readFile(trace, "utf8")).trim().split("\n").map((line) => JSON.parse(line));
+      expect(events.some((event) => event.type === "tool.denied")).toBe(false);
+      expect(events.find((event) => event.type === "filesystem.read")?.payload.path).toBe("/workspace/a.txt");
     } finally {
       await rm(root, { recursive: true, force: true });
     }
