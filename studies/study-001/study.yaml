@@ -8,7 +8,7 @@ fixture:
   sha256: b3ba96e83964623b0f798a63e7999cb5b3546015156cb4165c516c9bef8a5d14
 
 runner:
-  version: ravel-runner/0.1
+  version: ravel-runner/0.1-pilot-r2
 
 model:
   provider: openai
