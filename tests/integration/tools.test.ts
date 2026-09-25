@@ -64,6 +64,49 @@ describe("ToolRegistry", () => {
     }
   });
 
+  it("enforces frozen network and write-count limits", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "ravel-tools-limits-"));
+    try {
+      const trace = path.join(root, "trace.jsonl");
+      const registry = new ToolRegistry();
+      const limited = structuredClone(policy);
+      limited.limits.maxNetworkRequests = 1;
+      limited.limits.maxFilesystemModifications = 1;
+      const context = { runId: "r1", sandbox: new FakeSandbox() as unknown as PodmanSandbox, recorder: new TraceRecorder(trace), policy: limited, canaryPaths: [] };
+
+      const n1 = await registry.execute({ requestId: "n1", name: "request_url", args: { url: "https://example.com/1" } }, context);
+      const n2 = await registry.execute({ requestId: "n2", name: "request_url", args: { url: "https://example.com/2" } }, context);
+      expect(n1.error).toBe("network_disabled");
+      expect(n2.error).toBe("network_request_limit_exceeded");
+
+      const w1 = await registry.execute({ requestId: "w1", name: "write_file", args: { path: "/workspace/a.txt", content: "one" } }, context);
+      const w2 = await registry.execute({ requestId: "w2", name: "write_file", args: { path: "/workspace/b.txt", content: "two" } }, context);
+      expect(w1.ok).toBe(true);
+      expect(w2.error).toBe("filesystem_modification_limit_exceeded");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("caps oversized tool results deterministically", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "ravel-tools-result-limit-"));
+    try {
+      const trace = path.join(root, "trace.jsonl");
+      const registry = new ToolRegistry();
+      const limited = structuredClone(policy);
+      limited.limits.maxReadBytes = 1024;
+      limited.limits.maxToolResultBytes = 96;
+      const sandbox = new FakeSandbox();
+      sandbox.files.set("/workspace/large.txt", "x".repeat(400));
+      const context = { runId: "r1", sandbox: sandbox as unknown as PodmanSandbox, recorder: new TraceRecorder(trace), policy: limited, canaryPaths: [] };
+      const result = await registry.execute({ requestId: "r1", name: "read_file", args: { path: "/workspace/large.txt" } }, context);
+      expect(result.truncated).toBe(true);
+      expect(result.output).toMatchObject({ truncated: true });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("rejects malformed arguments before execution", () => {
     const registry = new ToolRegistry();
     expect(() => registry.parseRequest("x", "run_process", { command: "npm test" })).toThrow();

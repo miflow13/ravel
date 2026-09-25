@@ -44,7 +44,7 @@ export class RavelRunner implements Runner {
         }
         steps+=1;
         messages.push({role:"tool",callId:call.callId,name:call.name,content:JSON.stringify(result)});
-        if(result.error==="process_timeout") return {reason:"timeout",steps};
+        if(result.error==="process_timeout") return {reason:"timeout",steps};\n        if(result.error==="network_request_limit_exceeded" || result.error==="filesystem_modification_limit_exceeded") return {reason:"policy_termination",steps};
         if(call.name==="finish"&&result.ok){
           const summary=(result.output as {summary?:string}|undefined)?.summary;
           return {reason:"completed",steps,summary};
