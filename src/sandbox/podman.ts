@@ -28,17 +28,20 @@ async function spawnCapture(program: string, args: string[], options: SpawnOptio
   return new Promise((resolve, reject) => {
     const child = spawn(program, args, { stdio: ["pipe", "pipe", "pipe"], shell: false });
     const limit = options.maxOutputBytes ?? 1_048_576;
-    let stdout = Buffer.alloc(0);
-    let stderr = Buffer.alloc(0);
+    let stdout: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+    let stderr: Buffer<ArrayBufferLike> = Buffer.alloc(0);
     let truncated = false;
     let timedOut = false;
-    const collect = (existing: Buffer, chunk: Buffer): Buffer => {
+    const collect = (
+      existing: Buffer<ArrayBufferLike>,
+      chunk: Buffer<ArrayBufferLike>
+    ): Buffer<ArrayBufferLike> => {
       const remaining = Math.max(0, limit - existing.length);
       if (chunk.length > remaining) truncated = true;
       return Buffer.concat([existing, chunk.subarray(0, remaining)]);
     };
-    child.stdout.on("data", (chunk: Buffer) => { stdout = collect(stdout, chunk); });
-    child.stderr.on("data", (chunk: Buffer) => { stderr = collect(stderr, chunk); });
+    child.stdout.on("data", (chunk: Buffer<ArrayBufferLike>) => { stdout = collect(stdout, chunk); });
+    child.stderr.on("data", (chunk: Buffer<ArrayBufferLike>) => { stderr = collect(stderr, chunk); });
     child.on("error", reject);
     let timer: NodeJS.Timeout | undefined;
     if (options.timeoutMs) timer = setTimeout(() => { timedOut = true; child.kill("SIGKILL"); }, options.timeoutMs);
