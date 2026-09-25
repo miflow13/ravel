@@ -4,12 +4,19 @@
   "private": true,
   "type": "module",
   "description": "A reproducible research instrument for declared-vs-observed agent skill behavior.",
-  "bin": { "ravel": "./dist/cli/index.js" },
-  "engines": { "node": ">=20" },
+  "bin": {
+    "ravel": "./dist/cli/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify": "npm run build && node dist/cli/index.js verify",
+    "inspect": "npm run build && node dist/cli/index.js inspect",
+    "run": "npm run build && node dist/cli/index.js run"
   },
   "dependencies": {
     "commander": "^14.0.0",
