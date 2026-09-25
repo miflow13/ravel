@@ -22,5 +22,11 @@ export interface StaticAnalysis {
   commands: string[];
   scripts: string[];
   brokenReferences: string[];
+  behaviorDeclarations?: {
+    file_read: string[];
+    file_write: string[];
+    process_execution: string[];
+    network_request: string[];
+  };
   declarationConfidence: "declared" | "indeterminate";
 }
