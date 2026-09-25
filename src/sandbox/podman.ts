@@ -114,8 +114,8 @@ export async function createSandbox(config: SandboxConfig = {}): Promise<PodmanS
   const args = [
     "run","-d","--rm","--name",name,"--read-only",
     "--tmpfs","/tmp:rw,noexec,nosuid,size=64m,mode=1777",
-    "--tmpfs","/workspace:rw,nosuid,size=256m,mode=0755,uid=1000,gid=1000",
-    "--tmpfs","/home/ravel:rw,noexec,nosuid,size=16m,mode=0700,uid=1000,gid=1000",
+    "--mount","type=tmpfs,dst=/workspace,tmpfs-size=268435456,tmpfs-mode=0755,chown=true",
+    "--mount","type=tmpfs,dst=/home/ravel,tmpfs-size=16777216,tmpfs-mode=0700,chown=true",
     "--user","1000:1000","--cap-drop","ALL","--security-opt","no-new-privileges",
     ...(config.networkDisabled === false ? [] : ["--network","none"]),
     image,"sleep","infinity"
