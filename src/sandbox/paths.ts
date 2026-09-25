@@ -5,10 +5,9 @@ export const PROTECTED_ROOT = "/protected";
 export const FAKE_HOME_ROOT = "/home/ravel";
 
 export function normalizeContainerPath(candidate: string): string {
-  if (!candidate.startsWith("/")) {
-    throw new Error(`Container path must be absolute: ${candidate}`);
-  }
-  return path.posix.resolve("/", candidate);
+  return candidate.startsWith("/")
+    ? path.posix.resolve("/", candidate)
+    : path.posix.resolve(WORKSPACE_ROOT, candidate);
 }
 
 export function isWithinContainerRoot(root: string, candidate: string): boolean {
