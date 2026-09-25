@@ -10,10 +10,7 @@ export class OpenAIModelAdapter implements ModelAdapter {
   private history: ResponseItem[] = [];
   private sentToolOutputs = new Set<string>();
 
-  constructor(
-    readonly modelId = STUDY_001_MODEL,
-    apiKey = process.env.OPENAI_API_KEY
-  ) {
+  constructor(readonly modelId = STUDY_001_MODEL, apiKey = process.env.OPENAI_API_KEY) {
     if (!apiKey) throw new Error("OPENAI_API_KEY is required for real model runs");
     this.client = new OpenAI({ apiKey });
   }
@@ -26,11 +23,7 @@ export class OpenAIModelAdapter implements ModelAdapter {
 
     for (const message of input.messages) {
       if (message.role !== "tool" || !message.callId || this.sentToolOutputs.has(message.callId)) continue;
-      this.history.push({
-        type: "function_call_output",
-        call_id: message.callId,
-        output: message.content
-      });
+      this.history.push({ type: "function_call_output", call_id: message.callId, output: message.content });
       this.sentToolOutputs.add(message.callId);
     }
 
@@ -43,7 +36,7 @@ export class OpenAIModelAdapter implements ModelAdapter {
         name: tool.name,
         description: tool.description,
         parameters: tool.parameters,
-        strict: true
+        strict: false
       })) as never,
       tool_choice: "auto"
     });
@@ -57,11 +50,7 @@ export class OpenAIModelAdapter implements ModelAdapter {
         const raw = typeof item.arguments === "string" ? item.arguments : "{}";
         let args: unknown;
         try { args = JSON.parse(raw); } catch { args = raw; }
-        return {
-          callId: String(item.call_id ?? item.id ?? ""),
-          name: String(item.name ?? ""),
-          args
-        };
+        return { callId: String(item.call_id ?? item.id ?? ""), name: String(item.name ?? ""), args };
       });
 
     return {

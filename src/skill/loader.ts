@@ -47,7 +47,7 @@ export async function loadSkill(skillDir: string): Promise<LoadedSkill> {
     throw error;
   }
 
-  let parsed: matter.GrayMatterFile<string>;
+  let parsed: ReturnType<typeof matter>;
   try {
     parsed = matter(source);
   } catch (error) {
@@ -55,11 +55,5 @@ export async function loadSkill(skillDir: string): Promise<LoadedSkill> {
   }
 
   const name = typeof parsed.data.name === "string" ? parsed.data.name : null;
-  return {
-    root,
-    entrypoint,
-    name,
-    frontmatter: parsed.data as Record<string, unknown>,
-    markdown: parsed.content
-  };
+  return { root, entrypoint, name, frontmatter: parsed.data as Record<string, unknown>, markdown: parsed.content };
 }

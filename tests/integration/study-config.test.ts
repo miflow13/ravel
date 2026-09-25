@@ -1,6 +1,7 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { fixtureDigest } from "../../src/experiment/manifest.js";
+import { DEFAULT_SANDBOX_IMAGE } from "../../src/sandbox/podman.js";
 import { snapshotTree } from "../../src/sandbox/snapshot.js";
 import { loadStudyConfig } from "../../src/study/config.js";
 
@@ -13,6 +14,8 @@ describe("Study 001 pilot configuration", () => {
     expect(config.fixture.id).toBe("webapp-v1");
     expect(config.runner.version).toBe("ravel-runner/0.1");
     expect(config.model.id).toBe("gpt-6-sol");
+    expect(config.sandbox.image).toBe(DEFAULT_SANDBOX_IMAGE);
+    expect(config.sandbox.network_disabled).toBe(true);
     expect(config.policy.network).toBe("deny");
     expect(config.limits.max_steps).toBeGreaterThan(0);
     expect(config.planned_repetitions).toBeGreaterThanOrEqual(2);

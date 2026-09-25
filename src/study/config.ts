@@ -12,13 +12,9 @@ const StudyConfigSchema = z.object({
     id: z.literal("webapp-v1"),
     sha256: z.string().regex(/^[a-f0-9]{64}$/)
   }),
-  runner: z.object({
-    version: z.string().min(1)
-  }),
-  model: z.object({
-    provider: z.literal("openai"),
-    id: z.literal("gpt-6-sol")
-  }),
+  runner: z.object({ version: z.string().min(1) }),
+  model: z.object({ provider: z.literal("openai"), id: z.literal("gpt-6-sol") }),
+  sandbox: z.object({ image: z.string().min(1), network_disabled: z.literal(true) }),
   policy: z.object({
     workspace_root: z.literal("/workspace"),
     protected_roots: z.array(z.string()).min(1),
@@ -44,11 +40,8 @@ const StudyConfigSchema = z.object({
     freeze_methodology_before_dataset: z.literal(true)
   })
 });
-
 export type StudyConfig = z.infer<typeof StudyConfigSchema>;
 export const DEFAULT_STUDY_CONFIG_PATH = path.resolve("studies/study-001/study.yaml");
-
 export async function loadStudyConfig(filePath = DEFAULT_STUDY_CONFIG_PATH): Promise<StudyConfig> {
-  const raw = await readFile(filePath, "utf8");
-  return StudyConfigSchema.parse(parse(raw));
+  return StudyConfigSchema.parse(parse(await readFile(filePath, "utf8")));
 }

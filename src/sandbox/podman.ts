@@ -3,6 +3,8 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { assertWorkspacePath, WORKSPACE_ROOT } from "./paths.js";
 
+export const DEFAULT_SANDBOX_IMAGE = "docker.io/library/node:22.23.3-bookworm-slim@sha256:25330af3531fb5e23318554a0aa911125b6e91b1b777edf7655501d207c067a2";
+
 export interface ProcessResult {
   exitCode: number;
   stdout: string;
@@ -10,14 +12,12 @@ export interface ProcessResult {
   timedOut: boolean;
   truncated: boolean;
 }
-
 export interface SandboxConfig {
   image?: string;
   name?: string;
   networkDisabled?: boolean;
   maxOutputBytes?: number;
 }
-
 interface SpawnOptions {
   timeoutMs?: number;
   maxOutputBytes?: number;
@@ -62,7 +62,12 @@ export async function isPodmanAvailable(): Promise<boolean> {
 }
 
 export class PodmanSandbox {
-  constructor(readonly containerId: string, readonly name: string, readonly maxOutputBytes: number) {}
+  constructor(
+    readonly containerId: string,
+    readonly name: string,
+    readonly maxOutputBytes: number,
+    readonly image: string
+  ) {}
 
   async execProcess(program: string, args: string[], cwd = WORKSPACE_ROOT, timeoutMs = 30_000): Promise<ProcessResult> {
     const safeCwd = assertWorkspacePath(cwd);
@@ -95,16 +100,26 @@ export class PodmanSandbox {
     return forWrite ? path.posix.join(canonical, path.posix.basename(lexical)) : canonical;
   }
 
-  async destroy(): Promise<void> { await spawnCapture("podman", ["rm", "-f", this.containerId], { timeoutMs: 15_000 }); }
+  async destroy(): Promise<void> {
+    await spawnCapture("podman", ["rm", "-f", this.containerId], { timeoutMs: 15_000 });
+  }
 }
 
 export async function createSandbox(config: SandboxConfig = {}): Promise<PodmanSandbox> {
   const name = config.name ?? `ravel-${randomUUID().slice(0, 12)}`;
-  const image = config.image ?? "node:22-bookworm-slim";
-  const args = ["run","-d","--rm","--name",name,"--read-only","--tmpfs","/tmp:rw,noexec,nosuid,size=64m","--tmpfs","/workspace:rw,nosuid,size=256m","--tmpfs","/home/ravel:rw,noexec,nosuid,size=16m","--user","1000:1000","--cap-drop","ALL","--security-opt","no-new-privileges",...(config.networkDisabled === false ? [] : ["--network","none"]),image,"sleep","infinity"];
+  const image = config.image ?? DEFAULT_SANDBOX_IMAGE;
+  const args = [
+    "run","-d","--rm","--name",name,"--read-only",
+    "--tmpfs","/tmp:rw,noexec,nosuid,size=64m",
+    "--tmpfs","/workspace:rw,nosuid,size=256m",
+    "--tmpfs","/home/ravel:rw,noexec,nosuid,size=16m",
+    "--user","1000:1000","--cap-drop","ALL","--security-opt","no-new-privileges",
+    ...(config.networkDisabled === false ? [] : ["--network","none"]),
+    image,"sleep","infinity"
+  ];
   const result = await spawnCapture("podman", args, { timeoutMs: 60_000 });
   if (result.exitCode !== 0) throw new Error(`Unable to start Podman sandbox: ${result.stderr}`);
-  return new PodmanSandbox(result.stdout.trim(), name, config.maxOutputBytes ?? 1_048_576);
+  return new PodmanSandbox(result.stdout.trim(), name, config.maxOutputBytes ?? 1_048_576, image);
 }
 
 export async function containerExists(containerId: string): Promise<boolean> {

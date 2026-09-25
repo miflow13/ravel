@@ -6,7 +6,7 @@ describe("buildJsonReport", () => {
     const report = buildJsonReport({
       manifest: {
         schemaVersion:1,runId:"r1",createdAt:"2026-09-25T20:00:00.000Z",ravelVersion:"0.1.0",runnerVersion:"runner",
-        skill:{name:"demo",root:"/skill",entrypoint:"/skill/SKILL.md"},fixture:{id:"f",sha256:"abc"},
+        skill:{name:"demo",root:"/skill",entrypoint:"/skill/SKILL.md"},fixture:{id:"f",sha256:"abc"},sandbox:{image:"synthetic-image",networkDisabled:true},
         policy:{workspaceRoot:"/workspace",protectedRoots:["/protected"],fakeHomeRoot:"/home/ravel",network:"deny",limits:{maxReadBytes:1,maxWriteBytes:1,maxToolResultBytes:1,maxProcessOutputBytes:1,processTimeoutMs:1,maxFilesystemModifications:1,maxNetworkRequests:1,maxSteps:1,maxModelCalls:1}},
         model:{provider:"fake",id:"fake"},task:"Review.",staticAnalysisDigest:"x"
       },

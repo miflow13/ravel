@@ -6,7 +6,7 @@ import { compareDeclaredToObserved } from "../report/comparison.js";
 import { renderHtmlReport } from "../report/html-report.js";
 import { buildJsonReport } from "../report/json-report.js";
 import { deriveObservations } from "../report/observations.js";
-import { createSandbox, type PodmanSandbox, type SandboxConfig } from "../sandbox/podman.js";
+import { createSandbox, DEFAULT_SANDBOX_IMAGE, type PodmanSandbox, type SandboxConfig } from "../sandbox/podman.js";
 import { snapshotTree, type FilesystemSnapshot } from "../sandbox/snapshot.js";
 import { analyzeSkill } from "../skill/analyzer.js";
 import { loadSkill } from "../skill/loader.js";
@@ -114,6 +114,8 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
     skillEntrypoint: skill.entrypoint,
     fixtureId: config.fixtureId,
     fixtureSnapshot: before,
+    sandboxImage: config.sandbox?.image ?? DEFAULT_SANDBOX_IMAGE,
+    networkDisabled: config.sandbox?.networkDisabled !== false,
     policy,
     modelProvider: config.modelProvider ?? "fake",
     modelId: config.modelId ?? "fake",
