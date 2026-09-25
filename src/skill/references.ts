@@ -54,7 +54,11 @@ export async function resolveSkillReferences(skill: LoadedSkill): Promise<Resolv
       }
 
       if (active.has(resolvedPath)) cyclic = true;
-      results.push({ source: sourcePath, raw, resolvedPath, exists, escapedRoot, cyclic });
+      const source = path.relative(skill.root, sourcePath).split(path.sep).join("/") || "SKILL.md";
+      const publicResolvedPath = escapedRoot
+        ? raw
+        : path.relative(skill.root, resolvedPath).split(path.sep).join("/");
+      results.push({ source, raw, resolvedPath: publicResolvedPath, exists, escapedRoot, cyclic });
 
       if (!exists || escapedRoot || cyclic || visited.has(resolvedPath)) continue;
       if (!/\.(?:md|markdown|txt)$/i.test(resolvedPath)) continue;
