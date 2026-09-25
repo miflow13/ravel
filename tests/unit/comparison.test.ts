@@ -29,6 +29,23 @@ describe("compareDeclaredToObserved", () => {
     expect(JSON.stringify(result)).not.toMatch(/unsafe|malicious|score/i);
   });
 
+  it("uses semantic behavior declarations when available", () => {
+    const analysis: StaticAnalysis = {
+      skillName:"x",references:[],urls:[],commands:[],scripts:[],brokenReferences:[],
+      behaviorDeclarations:{
+        file_read:["Inspect target files."],
+        file_write:[],
+        process_execution:["Run the test suite."],
+        network_request:[]
+      },
+      declarationConfidence:"declared"
+    };
+    const result = compareDeclaredToObserved(analysis, observations);
+    expect(result.find((x)=>x.behavior==="file_read")?.label).toBe("declared_and_observed");
+    expect(result.find((x)=>x.behavior==="process_execution")?.label).toBe("declared_not_observed");
+    expect(result.find((x)=>x.behavior==="file_write")?.label).toBe("indeterminate");
+  });
+
   it("propagates static uncertainty to indeterminate", () => {
     const analysis: StaticAnalysis = { skillName:null,references:[],urls:[],commands:[],scripts:[],brokenReferences:[],declarationConfidence:"indeterminate" };
     const result=compareDeclaredToObserved(analysis,{...observations,observations:observations.observations.map(o=>({...o,value:typeof o.value==="number"?0:o.value}))});
