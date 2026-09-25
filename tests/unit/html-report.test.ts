@@ -9,6 +9,7 @@ const report: JsonReport = {
   declaredBehavior:{skillName:"demo",references:[],urls:[],commands:[],scripts:[],brokenReferences:[],declarationConfidence:"indeterminate"},
   observedBehavior:{observations:[{name:"files_read",value:4,evidenceEventIds:["event-000002","event-000003","event-000004","event-000005"]}],filesystemDelta:{created:[],modified:[],deleted:[]}},
   declaredVsObserved:[{behavior:"file_read",label:"observed_not_declared",declaredEvidence:[],observedEvidenceEventIds:["event-000002"]}],
+  modelOutputs:[{eventId:"event-000010",turn:3,text:"Substantive review output"}],
   evidenceTimeline:[{eventId:"event-000002",timestamp:"2026-09-25T20:00:01.000Z",type:"filesystem.read"}],
   runStatus:{runId:"r1",reason:"runner_error",completed:false}
 };
@@ -16,9 +17,11 @@ const report: JsonReport = {
 describe("renderHtmlReport", () => {
   it("is standalone, contains six approved sections, exact values and provenance", () => {
     const html=renderHtmlReport(report);
-    for(const title of ["Identity","Experimental Conditions","Declared Behavior","Observed Behavior","Declared vs Observed","Evidence Timeline"]) expect(html).toContain(title);
+    for(const title of ["Identity","Experimental Conditions","Declared Behavior","Observed Behavior","Declared vs Observed","Model Outputs","Evidence Timeline"]) expect(html).toContain(title);
     expect(html).toContain(">4<");
     expect(html).toContain("event-000002");
+    expect(html).toContain("Substantive review output");
+    expect(html).toContain("event-000010");
     expect(html).toContain("Partial/terminated run");
     expect(html).not.toMatch(/<script\s+src=|https?:\/\/[^<]*\.js/);
   });
