@@ -21,13 +21,17 @@ export interface FilesystemDelta {
   deleted: string[];
 }
 
+function compareNames(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 export async function snapshotTree(root: string): Promise<FilesystemSnapshot> {
   const absoluteRoot = path.resolve(root);
   const entries: FilesystemSnapshotEntry[] = [];
 
   async function walk(current: string): Promise<void> {
     const children = await readdir(current, { withFileTypes: true });
-    children.sort((a, b) => a.name.localeCompare(b.name));
+    children.sort((a, b) => compareNames(a.name, b.name));
     for (const child of children) {
       const absolute = path.join(current, child.name);
       const relative = path.relative(absoluteRoot, absolute).split(path.sep).join("/");
@@ -63,5 +67,9 @@ export function diffSnapshots(before: FilesystemSnapshot, after: FilesystemSnaps
     const b = right.get(key);
     return Boolean(a && b && (a.type !== b.type || a.size !== b.size || a.sha256 !== b.sha256 || a.target !== b.target));
   });
-  return { created: created.sort(), modified: modified.sort(), deleted: deleted.sort() };
+  return {
+    created: created.sort(compareNames),
+    modified: modified.sort(compareNames),
+    deleted: deleted.sort(compareNames)
+  };
 }
