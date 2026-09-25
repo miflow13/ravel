@@ -26,6 +26,7 @@ export interface JsonReport {
   declaredBehavior: StaticAnalysis;
   observedBehavior: ObservationSet;
   declaredVsObserved: BehaviorComparison[];
+  modelOutputs: Array<{ eventId: string; turn: number | null; text: string }>;
   evidenceTimeline: Array<{ eventId: string; timestamp: string; type: TraceEvent["type"] }>;
   runStatus: RunStatus;
 }
@@ -46,6 +47,13 @@ export function buildJsonReport(input: ReportInput): JsonReport {
     declaredBehavior: input.staticAnalysis,
     observedBehavior: input.observations,
     declaredVsObserved: input.comparison,
+    modelOutputs: input.events
+      .filter((event) => event.type === "model.response" && typeof event.payload.text === "string" && event.payload.text.length > 0)
+      .map((event) => ({
+        eventId: event.eventId,
+        turn: typeof event.payload.turn === "number" ? event.payload.turn : null,
+        text: String(event.payload.text)
+      })),
     evidenceTimeline: input.events.map((event) => ({ eventId: event.eventId, timestamp: event.timestamp, type: event.type })),
     runStatus: input.status
   };
