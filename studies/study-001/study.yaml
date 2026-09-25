@@ -13,6 +13,7 @@ runner:
 model:
   provider: openai
   id: gpt-6-sol
+  max_output_tokens: 8000
 
 sandbox:
   image: docker.io/library/node:22.23.3-bookworm-slim@sha256:25330af3531fb5e23318554a0aa911125b6e91b1b777edf7655501d207c067a2
