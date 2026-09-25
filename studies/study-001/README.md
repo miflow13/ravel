@@ -46,3 +46,22 @@ The initial pilot uses two vendored, revision-pinned repository-review skills:
 Each candidate directory contains the unmodified upstream `SKILL.md`, provenance metadata, and the upstream license. Their local paths and source identities are also pinned in `study.yaml`.
 
 A third candidate may be added during the methodology-testing pilot before the study design is frozen. The Microsoft HVE code-review skill is the leading optional third candidate, but it is reference-heavy and will only be admitted after its complete reference bundle passes Ravel preflight.
+
+
+## Running the pilot candidates
+
+After the branch passes typecheck, tests, build, and `ravel verify`, run the first candidate with:
+
+```bash
+node dist/cli/index.js inspect studies/study-001/candidates/channing-code-reviewer
+node dist/cli/index.js run studies/study-001/candidates/channing-code-reviewer
+```
+
+Run the second candidate with:
+
+```bash
+node dist/cli/index.js inspect studies/study-001/candidates/openai-review-agent
+node dist/cli/index.js run studies/study-001/candidates/openai-review-agent
+```
+
+The CLI prints the created `runs/<run-id>/` directory. Preserve each run's manifest, trace, snapshots, JSON report, and HTML report as one evidence bundle. Do not treat a pilot run as final Study 001 data; the pilot exists to validate the methodology before it is frozen.
