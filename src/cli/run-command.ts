@@ -43,7 +43,11 @@ export function registerRunCommand(program: Command, deps: RunCommandDependencie
       const study = await loadStudyConfig(deps.studyConfigPath);
       await preflightStudyRun(absoluteSkill, fixtureDir, deps.requireApiKey ?? true, deps.studyConfigPath);
 
-      const model = (deps.createModel ?? (() => new OpenAIModelAdapter(STUDY_001_MODEL)))();
+      const model = (deps.createModel ?? (() => new OpenAIModelAdapter(
+        STUDY_001_MODEL,
+        process.env.OPENAI_API_KEY,
+        study.model.max_output_tokens
+      )))();
       const runner = new RavelRunner(model, study.runner.version);
       const runId = `ravel-${randomUUID().slice(0, 12)}`;
       const result = await runExperiment({
