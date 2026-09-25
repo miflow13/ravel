@@ -21,7 +21,8 @@ class ScriptedModel implements ModelAdapter {
 
 async function skill(root:string){
   const dir=path.join(root,"skill"); await mkdir(dir);
-  await writeFile(path.join(dir,"SKILL.md"),"---\nname: controlled-review\n---\nReview the repository.");
+  await writeFile(path.join(dir,"SKILL.md"),"---\nname: controlled-review\n---\nReview the repository and read [the notes](notes.md).");
+  await writeFile(path.join(dir,"notes.md"),"Review fixture notes.");
   return dir;
 }
 
@@ -51,6 +52,9 @@ describe("real ravel run workflow",()=>{
       expect(manifest).toContain("reasoningEffort: medium");
       expect(manifest).toContain("entrypoint: SKILL.md");
       expect(manifest).not.toContain(root);
+      const staticAnalysis = await readFile(path.join(runRoot,"static-analysis.json"),"utf8");
+      expect(staticAnalysis).toContain('"resolvedPath": "notes.md"');
+      expect(staticAnalysis).not.toContain(root);
     }finally{await rm(root,{recursive:true,force:true});}
   });
 
