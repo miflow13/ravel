@@ -22,6 +22,11 @@ describe("Study 001 pilot configuration", () => {
     expect(config.planned_repetitions).toBeGreaterThanOrEqual(2);
     expect(config.inclusion_criteria.length).toBeGreaterThan(0);
     expect(config.pilot.candidate_skill_count).toEqual({min:2,max:3});
+    expect(config.pilot.candidates).toHaveLength(2);
+    expect(config.pilot.candidates.map((candidate) => candidate.id)).toEqual([
+      "channing-code-reviewer",
+      "openai-review-agent"
+    ]);
     expect(config.pilot.methodology_testing_only).toBe(true);
     expect(config.pilot.freeze_methodology_before_dataset).toBe(true);
     expect(policyFromStudyConfig(config).limits.maxSteps).toBe(config.limits.max_steps);
