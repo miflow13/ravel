@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -39,7 +39,10 @@ describe("Podman sandbox", () => {
     try {
       await writeFile(path.join(temp, "a.txt"), "a");
       await writeFile(path.join(temp, "gone.txt"), "gone");
+      await mkdir(path.join(temp, ".git"));
+      await writeFile(path.join(temp, ".git", "config"), "harness metadata");
       const before = await snapshotTree(temp);
+      expect(before.entries.some((entry) => entry.path.startsWith(".git"))).toBe(false);
       await writeFile(path.join(temp, "a.txt"), "changed");
       await rm(path.join(temp, "gone.txt"));
       await writeFile(path.join(temp, "new.txt"), "new");
