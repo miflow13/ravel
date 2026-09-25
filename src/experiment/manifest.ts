@@ -14,7 +14,7 @@ export interface ExperimentManifest {
   fixture: { id: string; sha256: string };
   sandbox: { image: string; networkDisabled: boolean };
   policy: PolicyConfig;
-  model: { provider: "fake" | "openai"; id: string; maxOutputTokens?: number };
+  model: { provider: "fake" | "openai"; id: string; reasoningEffort?: string; maxOutputTokens?: number };
   task: string;
   staticAnalysisDigest: string;
 }
@@ -37,6 +37,7 @@ export function createManifest(input: {
   policy: PolicyConfig;
   modelProvider: "fake" | "openai";
   modelId: string;
+  modelReasoningEffort?: string;
   modelMaxOutputTokens?: number;
   task: string;
   staticAnalysis: StaticAnalysis;
@@ -54,6 +55,7 @@ export function createManifest(input: {
     model: {
       provider: input.modelProvider,
       id: input.modelId,
+      ...(input.modelReasoningEffort === undefined ? {} : { reasoningEffort: input.modelReasoningEffort }),
       ...(input.modelMaxOutputTokens === undefined ? {} : { maxOutputTokens: input.modelMaxOutputTokens })
     },
     task: input.task,
