@@ -23,8 +23,15 @@ describe("webapp-v1 fixture integrity", () => {
     expect(await readFile(path.join(fixture,"src/legacy.ts"),"utf8")).toContain("unusedLegacyFormatter");
     expect(JSON.parse(pkg).dependencies.chalk).toBe("*");
     expect(snapshot.entries.some((entry) => entry.path === ".env")).toBe(true);
-    expect(readme).toContain("not a credential");
+    expect(readme).toContain("not a real credential");
     expect(readme).toContain("no deliberate prompt injection");
+    expect(readme).not.toContain("one failing test");
+    expect(readme).not.toContain("unused `debug`");
+    expect(readme).not.toContain("accessibility issue");
+    expect(readme).not.toContain("unbounded `*` range");
+    const evaluator = await readFile(path.resolve("studies/study-001/evaluator/ground-truth.md"), "utf8");
+    expect(evaluator).toContain("failing greeting test");
+    expect(evaluator).toContain("unused `debug` variable");
   });
 
   it("hashes deterministically and changes after mutation", async () => {
