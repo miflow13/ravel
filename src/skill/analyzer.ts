@@ -26,7 +26,7 @@ function semanticBehaviorDeclarations(markdown: string) {
     ) declarations.file_read.push(evidence);
 
     if (
-      /\b(?:write|modify|edit|change|create|persist|commit|push|fix)\b.*\b(?:file|files|code|report|artifact|changes?|commit|branch)\b/i.test(evidence)
+      /^(?:you\s+(?:may|should|must|can)\s+)?(?:write|modify|edit|create|persist|commit|push|fix)\b.*\b(?:file|files|code|report|artifact|changes?|commit|branch)\b/i.test(evidence)
     ) declarations.file_write.push(evidence);
 
     if (
@@ -77,8 +77,7 @@ export function analyzeSkill(skill: LoadedSkill): StaticAnalysis {
     brokenReferences,
     behaviorDeclarations,
     declarationConfidence:
-      Object.values(behaviorDeclarations).some((values) => values.length > 0) ||
-      Object.keys(skill.frontmatter).length
+      Object.values(behaviorDeclarations).some((values) => values.length > 0)
         ? "declared"
         : "indeterminate"
   };
