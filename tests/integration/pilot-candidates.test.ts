@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { analyzeSkill } from "../../src/skill/analyzer.js";
 import { loadSkill } from "../../src/skill/loader.js";
 import { resolveSkillReferences } from "../../src/skill/references.js";
 import { loadStudyConfig } from "../../src/study/config.js";
@@ -28,5 +29,13 @@ describe("Study 001 pilot candidates", () => {
       const references = await resolveSkillReferences(skill);
       expect(references.filter((reference) => !reference.exists || reference.escapedRoot)).toEqual([]);
     }
+  });
+
+  it("recognizes Channing review instructions as declared read and process behavior", async () => {
+    const skill = await loadSkill(path.resolve("studies/study-001/candidates/channing-code-reviewer"));
+    const analysis = analyzeSkill(skill);
+    expect(analysis.behaviorDeclarations?.file_read.length).toBeGreaterThan(0);
+    expect(analysis.behaviorDeclarations?.process_execution.length).toBeGreaterThan(0);
+    expect(analysis.behaviorDeclarations?.file_write).toEqual([]);
   });
 });
