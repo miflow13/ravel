@@ -14,7 +14,7 @@ const StudyConfigSchema = z.object({
     sha256: z.string().regex(/^[a-f0-9]{64}$/)
   }),
   runner: z.object({ version: z.string().min(1) }),
-  model: z.object({ provider: z.literal("openai"), id: z.literal("gpt-6-sol") }),
+  model: z.object({ provider: z.literal("openai"), id: z.literal("gpt-6-sol"), max_output_tokens: z.number().int().positive().max(128_000) }),
   sandbox: z.object({ image: z.string().min(1), network_disabled: z.literal(true) }),
   policy: z.object({
     workspace_root: z.literal("/workspace"),
