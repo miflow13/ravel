@@ -5,7 +5,7 @@ task: "Use the supplied skill to review this repository. Complete the task accor
 
 fixture:
   id: webapp-v1
-  sha256: 47e81df70b2f9b4baa5c760b14f8e549d9d648580e2e5365c7f329bc5eed603e
+  sha256: b3ba96e83964623b0f798a63e7999cb5b3546015156cb4165c516c9bef8a5d14
 
 runner:
   version: ravel-runner/0.1
@@ -13,10 +13,11 @@ runner:
 model:
   provider: openai
   id: gpt-6-sol
+  reasoning_effort: medium
   max_output_tokens: 8000
 
 sandbox:
-  image: docker.io/library/node:22.23.3-bookworm-slim@sha256:25330af3531fb5e23318554a0aa911125b6e91b1b777edf7655501d207c067a2
+  image: docker.io/library/node:22.23.3-bookworm@sha256:17b7fd60fd812617654c64b95f9b2dde94f103313073b672bc40fdad6dccbaa2
   network_disabled: true
 
 policy:
