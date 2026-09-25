@@ -55,6 +55,10 @@ describe("real ravel run workflow",()=>{
       const staticAnalysis = await readFile(path.join(runRoot,"static-analysis.json"),"utf8");
       expect(staticAnalysis).toContain('"resolvedPath": "notes.md"');
       expect(staticAnalysis).not.toContain(root);
+      for (const snapshotFile of ["filesystem-before.json","filesystem-after.json"]) {
+        const snapshot = JSON.parse(await readFile(path.join(runRoot,snapshotFile),"utf8")) as { root: string };
+        expect(snapshot.root).toBe("/workspace");
+      }
     }finally{await rm(root,{recursive:true,force:true});}
   });
 
