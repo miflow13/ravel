@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { assertWorkspacePath, WORKSPACE_ROOT } from "./paths.js";
 
-export const DEFAULT_SANDBOX_IMAGE = "docker.io/library/node:22.23.3-bookworm-slim@sha256:25330af3531fb5e23318554a0aa911125b6e91b1b777edf7655501d207c067a2";
+export const DEFAULT_SANDBOX_IMAGE = "docker.io/library/node:22.23.3-bookworm@sha256:17b7fd60fd812617654c64b95f9b2dde94f103313073b672bc40fdad6dccbaa2";
 
 export interface ProcessResult {
   exitCode: number;
