@@ -73,6 +73,27 @@ async function readTrace(filePath: string): Promise<TraceEvent[]> {
   return raw.split("\n").filter(Boolean).map((line) => TraceEventSchema.parse(JSON.parse(line)));
 }
 
+async function initializeFixtureGitRepository(sandbox: PodmanSandbox): Promise<void> {
+  const commands: Array<[string, string[]]> = [
+    ["git", ["init", "-q", "/workspace"]],
+    ["git", ["-C", "/workspace", "add", "-A"]],
+    ["env", [
+      "GIT_AUTHOR_DATE=2026-01-01T00:00:00Z",
+      "GIT_COMMITTER_DATE=2026-01-01T00:00:00Z",
+      "git", "-C", "/workspace",
+      "-c", "user.name=Ravel Fixture",
+      "-c", "user.email=ravel@example.invalid",
+      "commit", "-q", "-m", "Frozen fixture baseline"
+    ]]
+  ];
+  for (const [program, args] of commands) {
+    const result = await sandbox.execProcess(program, args, "/workspace", 30_000);
+    if (result.exitCode !== 0) {
+      throw new Error(`Unable to initialize deterministic fixture Git repository: ${result.stderr || result.stdout}`);
+    }
+  }
+}
+
 async function writeReports(input: {
   paths: ExperimentPaths;
   manifest: ExperimentManifest;
@@ -111,8 +132,8 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
     runId: config.runId,
     runnerVersion: config.runnerVersion ?? "ravel-runner/0.1",
     skillName: skill.name,
-    skillRoot: skill.root,
-    skillEntrypoint: skill.entrypoint,
+    skillRoot: ".",
+    skillEntrypoint: path.relative(skill.root, skill.entrypoint).split(path.sep).join("/"),
     fixtureId: config.fixtureId,
     fixtureSnapshot: before,
     sandboxImage: config.sandbox?.image ?? DEFAULT_SANDBOX_IMAGE,
@@ -128,7 +149,11 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
 
   const recorder = new TraceRecorder(paths.trace);
   await recorder.append({ runId: config.runId, type: "run.start", payload: { manifest: path.basename(paths.manifest) } });
-  await recorder.append({ runId: config.runId, type: "skill.loaded", payload: { name: skill.name, entrypoint: skill.entrypoint } });
+  await recorder.append({
+    runId: config.runId,
+    type: "skill.loaded",
+    payload: { name: skill.name, entrypoint: path.relative(skill.root, skill.entrypoint).split(path.sep).join("/") }
+  });
 
   let sandbox: PodmanSandbox | undefined;
   let after: FilesystemSnapshot | undefined;
@@ -138,6 +163,7 @@ export async function runExperiment(config: ExperimentConfig, runner: Runner): P
   try {
     sandbox = await createSandbox({ ...config.sandbox, maxOutputBytes: policy.limits.maxProcessOutputBytes });
     await sandbox.copyIn(`${path.resolve(config.fixtureDir)}/.`, "/workspace");
+    await initializeFixtureGitRepository(sandbox);
     const registry = new ToolRegistry();
     const result = await runner.run({
       runId: config.runId,
